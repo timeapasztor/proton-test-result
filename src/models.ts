@@ -1,9 +1,9 @@
-export interface Password {
+export type Password = {
     id: string;
-    name: string;
+    name?: string;
     description?: string;
     value: string;
-    url: string[];
-    createdAt: number;
+    url?: string[];
+    createdAt?: number;
     lastModifiedAt?: number;
-}
+};

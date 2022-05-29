@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import uniqid from 'uniqid';
 
 import AppHeader from './AppHeader';
@@ -10,6 +10,7 @@ import PasswordEdit from './PasswordEdit';
 
 import { Password } from '../models';
 import classes from './PasswordMainContainer.module.css';
+import { getItem } from '../storage';
 
 function createNewPassword() {
     const id = uniqid();
@@ -36,8 +37,15 @@ const PasswordMain = ({
     onPasswordDeleted,
 }: Props) => {
     const [selectedPasswordId, setSelectedPasswordId] = useState<string | null>(null);
-
     const [editing, setEditing] = useState(false);
+    const [storedPasswords, setStoredPasswords] = useState<any>();
+
+    useEffect(() => {
+        const passwordList = getItem('passwords');
+        if (passwordList) {
+            setStoredPasswords(passwordList);
+        }
+    }, []);
 
     function handleCreatePassword() {
         const newPassword = createNewPassword();
@@ -46,7 +54,7 @@ const PasswordMain = ({
         setEditing(true);
     }
 
-    async function handleSelectPassword(id: string) {
+    function handleSelectPassword(id: string) {
         setSelectedPasswordId(id);
     }
 
@@ -69,8 +77,9 @@ const PasswordMain = ({
         setEditing(false);
     }
 
-    const amountOfVulnerablePasswords = Object.keys(decryptedPasswords).reduce<number>(
-        (acc, key) => acc + +(decryptedPasswords[key].value.length < 3),
+    const passwords = { ...storedPasswords, ...decryptedPasswords };
+    const amountOfVulnerablePasswords = Object.keys(passwords).reduce<number>(
+        (acc, key) => acc + +(passwords[key].value.length < 3),
         0
     );
 
@@ -86,11 +95,12 @@ const PasswordMain = ({
             </div>
 
             <div className={classes.passwordsArea}>
-                {Object.values(decryptedPasswords).length > 0 ? (
+                {Object.values(passwords).length > 0 ? (
                     <Passwords
-                        passwords={decryptedPasswords}
+                        passwords={passwords}
                         editing={editing}
                         onSelectPassword={handleSelectPassword}
+                        selected={selectedPasswordId}
                     />
                 ) : (
                     <NoPasswords />
@@ -102,7 +112,8 @@ const PasswordMain = ({
                     editing ? (
                         <PasswordEdit
                             key={selectedPasswordId}
-                            password={decryptedPasswords[selectedPasswordId]}
+                            passwords={passwords}
+                            password={passwords[selectedPasswordId]}
                             onSave={handleSave}
                             onCancel={handleCancel}
                             onDelete={() => handleDelete(selectedPasswordId)}
@@ -110,7 +121,7 @@ const PasswordMain = ({
                     ) : (
                         <PasswordView
                             key={selectedPasswordId}
-                            password={decryptedPasswords[selectedPasswordId]}
+                            password={passwords[selectedPasswordId]}
                             onEdit={handlePasswordEditIntent}
                         />
                     )

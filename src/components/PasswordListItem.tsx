@@ -9,11 +9,12 @@ interface PasswordListItemProps {
     disabled: boolean;
     onClick: () => void;
     vulnerable: boolean;
+    selected: string | null;
 }
 
-function PasswordListItem({ name, vulnerable, ...rest }: PasswordListItemProps) {
+function PasswordListItem({ name, vulnerable, selected, ...rest }: PasswordListItemProps) {
     return (
-        <ListItem clickable className={classes.listItem} {...rest}>
+        <ListItem clickable className={classes.listItem} selected={selected} {...rest}>
             {name}
             {vulnerable && <Icon size="small" className="fas fa-exclamation-triangle" />}
         </ListItem>
